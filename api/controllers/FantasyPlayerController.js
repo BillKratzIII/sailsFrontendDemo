@@ -61,22 +61,28 @@ module.exports = {
         var modifiedEndpoint = endpoint + "/" + values.id;
 
         if(req.method != "POST"){
-          return res.view('update');
-        }
+          client.get(endpoint, function (data, response) {
+             return res.view('update', {fantasyplayers: data});
+            }).on('error', function (err) {
 
-        var args = {
+            return res.view('update', {error: { message: "There was an error getting the record!"}});
+             });
+        }else{
+
+          var args = {
             data: req.body,
             headers: { "Content-Type": "application/json" }
-        };
-        //MODIFY ENDPOINT URL
-        client.put(modifiedEndpoint, args, function (data, response) {
+          };
+          client.put(modifiedEndpoint, args, function (data, response) {
             if(response.statusCode != "200"){
                 return res.view('update', {error:{message: response.statusMessage + ": " + data.reason}});
             }
+            
+            return res.redirect('back');
+            //res.view('update', {success:{message: "Record updated successfully"}});
 
-            return res.view('update', {success:{message: "Record updated successfully"}});
-
-        })
+          })
+        }
   },
 
 
@@ -89,17 +95,23 @@ module.exports = {
     var modifiedEndpoint = endpoint + "/" + values.id;
 
         if(req.method != "POST"){
-          return res.view('delete');
-        }
+          client.get(endpoint, function (data, response) {
+             return res.view('delete', {fantasyplayers: data});
+            }).on('error', function (err) {
 
-        client.delete(modifiedEndpoint, function (data, response) {
+            return res.view('delete', {error: { message: "There was an error getting the record!"}});
+             });
+        }else{
+
+          client.delete(modifiedEndpoint, function (data, response) {
             if(response.statusCode != "200"){
-                return res.view('update', {error:{message: response.statusMessage + ": " + data.reason}});
+                return res.view('delete', {error:{message: response.statusMessage + ": " + data.reason}});
             }
 
-            return res.view('update', {success:{message: "Record deleted successfully"}});
+            return res.redirect('back');
 
-        })
+          })
+        }
   }
 };
 
